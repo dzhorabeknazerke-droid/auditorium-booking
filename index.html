@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Аудиторияны броньдау жүйесі</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <div class="container nav">
+    <div class="logo">Room<span>Book</span></div>
+    <nav>
+      <a href="#rooms">Аудиториялар</a>
+      <a href="#booking">Броньдау</a>
+      <a href="#mybookings">Менің броньдарым</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+ <div class="container">
+  <h1>Аудиторияны броньдау жүйесі</h1>
+  <p>Оқу аудиториясын қажетті күн мен уақытқа жылдам әрі ыңғайлы броньдаңыз.</p>
+  <a class="btn" href="#rooms">Аудитория таңдау</a>
+ </div>
+</section>
+
+<main class="container">
+<section id="rooms">
+ <h2>Қолжетімді аудиториялар</h2>
+ <div id="roomList" class="cards"></div>
+</section>
+
+<section id="booking" class="panel">
+ <h2>Аудиторияны броньдау</h2>
+ <form id="bookingForm">
+   <label>Аудитория
+     <select id="room" required></select>
+   </label>
+   <label>Аты-жөніңіз
+     <input id="name" type="text" placeholder="Мысалы: Айдос Ерланұлы" required>
+   </label>
+   <label>Күні
+     <input id="date" type="date" required>
+   </label>
+   <div class="two">
+     <label>Басталу уақыты
+       <input id="start" type="time" required>
+     </label>
+     <label>Аяқталу уақыты
+       <input id="end" type="time" required>
+     </label>
+   </div>
+   <label>Бронь мақсаты
+     <input id="purpose" type="text" placeholder="Сабақ, кездесу, жоба қорғау..." required>
+   </label>
+   <button class="btn" type="submit">Бронь жасау</button>
+ </form>
+ <div id="message"></div>
+</section>
+
+<section id="mybookings">
+ <h2>Менің броньдарым</h2>
+ <div id="bookingList"></div>
+</section>
+</main>
+
+<footer><p>© 2026 RoomBook — Аудиторияны броньдау жүйесі</p></footer>
+<script src="script.js"></script>
+</body>
+</html>
