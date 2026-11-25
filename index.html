@@ -1,72 +1,837 @@
 <!DOCTYPE html>
 <html lang="kk">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Аудиторияны броньдау жүйесі</title>
-<link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Аудиторияларды броньдау жүйесі</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                        },
+                        primary: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
 </head>
-<body>
-<header>
-  <div class="container nav">
-    <div class="logo">Room<span>Book</span></div>
-    <nav>
-      <a href="#rooms">Аудиториялар</a>
-      <a href="#booking">Броньдау</a>
-      <a href="#mybookings">Менің броньдарым</a>
-    </nav>
-  </div>
-</header>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
 
-<section class="hero">
- <div class="container">
-  <h1>Аудиторияны броньдау жүйесі</h1>
-  <p>Оқу аудиториясын қажетті күн мен уақытқа жылдам әрі ыңғайлы броньдаңыз.</p>
-  <a class="btn" href="#rooms">Аудитория таңдау</a>
- </div>
-</section>
+    <!-- Top Navigation Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo & System Title -->
+                <div class="flex items-center space-x-3">
+                    <div class="bg-primary-600 text-white p-2.5 rounded-xl shadow-md shadow-primary-500/20">
+                        <i class="fa-solid fa-door-open text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-slate-900 tracking-tight leading-none">Аудитория Броньдау</h1>
+                        <p class="text-xs text-slate-500 font-medium mt-0.5">Университеттік автоматтандырылған жүйе</p>
+                    </div>
+                </div>
 
-<main class="container">
-<section id="rooms">
- <h2>Қолжетімді аудиториялар</h2>
- <div id="roomList" class="cards"></div>
-</section>
+                <!-- Action Button & User Badge -->
+                <div class="flex items-center space-x-3">
+                    <button onclick="switchTab('rooms')" class="hidden sm:flex items-center gap-2 bg-primary-50 text-primary-700 hover:bg-primary-100 font-medium px-4 py-2 rounded-lg text-sm transition">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>Жаңа бронь</span>
+                    </button>
+                    <div class="flex items-center gap-2 pl-2 border-l border-slate-200">
+                        <div class="w-9 h-9 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center font-bold text-sm">
+                            <i class="fa-solid fa-user-graduate"></i>
+                        </div>
+                        <div class="hidden md:block">
+                            <p class="text-xs font-semibold text-slate-800">Джорабек Назерке</p>
+                            <p class="text-[10px] text-slate-500">Студент</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
 
-<section id="booking" class="panel">
- <h2>Аудиторияны броньдау</h2>
- <form id="bookingForm">
-   <label>Аудитория
-     <select id="room" required></select>
-   </label>
-   <label>Аты-жөніңіз
-     <input id="name" type="text" placeholder="Мысалы: Айдос Ерланұлы" required>
-   </label>
-   <label>Күні
-     <input id="date" type="date" required>
-   </label>
-   <div class="two">
-     <label>Басталу уақыты
-       <input id="start" type="time" required>
-     </label>
-     <label>Аяқталу уақыты
-       <input id="end" type="time" required>
-     </label>
-   </div>
-   <label>Бронь мақсаты
-     <input id="purpose" type="text" placeholder="Сабақ, кездесу, жоба қорғау..." required>
-   </label>
-   <button class="btn" type="submit">Бронь жасау</button>
- </form>
- <div id="message"></div>
-</section>
+    <!-- Main Container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
-<section id="mybookings">
- <h2>Менің броньдарым</h2>
- <div id="bookingList"></div>
-</section>
-</main>
+        <!-- Notification Banner Container -->
+        <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2"></div>
 
-<footer><p>© 2026 RoomBook — Аудиторияны броньдау жүйесі</p></footer>
-<script src="script.js"></script>
+        <!-- Dashboard Statistics Cards -->
+        <section class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+            <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm flex items-center space-x-4">
+                <div class="p-3.5 bg-blue-50 text-blue-600 rounded-xl">
+                    <i class="fa-solid fa-building text-xl"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-medium text-slate-500">Барлық аудитория</p>
+                    <h3 id="statTotalRooms" class="text-2xl font-bold text-slate-900 mt-0.5">0</h3>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm flex items-center space-x-4">
+                <div class="p-3.5 bg-emerald-50 text-emerald-600 rounded-xl">
+                    <i class="fa-solid fa-circle-check text-xl"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-medium text-slate-500">Қазір бос бөлмелер</p>
+                    <h3 id="statAvailableRooms" class="text-2xl font-bold text-slate-900 mt-0.5">0</h3>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm flex items-center space-x-4">
+                <div class="p-3.5 bg-amber-50 text-amber-600 rounded-xl">
+                    <i class="fa-solid fa-bookmark text-xl"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-medium text-slate-500">Белсенді брондар</p>
+                    <h3 id="statTotalBookings" class="text-2xl font-bold text-slate-900 mt-0.5">0</h3>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm flex items-center space-x-4">
+                <div class="p-3.5 bg-purple-50 text-purple-600 rounded-xl">
+                    <i class="fa-solid fa-users text-xl"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-medium text-slate-500">Қолданушылар</p>
+                    <h3 class="text-2xl font-bold text-slate-900 mt-0.5">180+</h3>
+                </div>
+            </div>
+        </section>
+
+        <!-- Navigation Tabs -->
+        <div class="border-b border-slate-200 flex space-x-6 text-sm font-semibold overflow-x-auto">
+            <button id="tabBtnRooms" onclick="switchTab('rooms')" class="pb-3 border-b-2 border-primary-600 text-primary-600 flex items-center gap-2 whitespace-nowrap transition">
+                <i class="fa-solid fa-list-check"></i>
+                <span>Аудиториялар каталогы</span>
+            </button>
+            <button id="tabBtnCalendar" onclick="switchTab('calendar')" class="pb-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-2 whitespace-nowrap transition">
+                <i class="fa-solid fa-calendar-week"></i>
+                <span>Кесте / Календарь</span>
+            </button>
+            <button id="tabBtnMyBookings" onclick="switchTab('myBookings')" class="pb-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-2 whitespace-nowrap transition relative">
+                <i class="fa-solid fa-bookmark"></i>
+                <span>Менің броньдарым</span>
+                <span id="bookingBadge" class="bg-primary-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">0</span>
+            </button>
+        </div>
+
+        <!-- TAB 1: ROOMS CATALOG & FILTER -->
+        <div id="tabRooms" class="space-y-6">
+            <!-- Filter Bar -->
+            <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                    <!-- Search Input -->
+                    <div class="lg:col-span-1">
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Іздеу</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-sm"></i>
+                            <input type="text" id="filterSearch" placeholder="Аудитория немесе жабдық..." class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition">
+                        </div>
+                    </div>
+
+                    <!-- Type Filter -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Түрі</label>
+                        <select id="filterType" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition">
+                            <option value="all">Барлық түрлері</option>
+                            <option value="Лекция залы">Лекция залы</option>
+                            <option value="Компьютерлік сынып">Компьютерлік сынып</option>
+                            <option value="Лаборатория">Лаборатория</option>
+                            <option value="Семинар бөлмесі">Семинар бөлмесі</option>
+                        </select>
+                    </div>
+
+                    <!-- Floor Filter -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Қабат</label>
+                        <select id="filterFloor" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition">
+                            <option value="all">Барлық қабаттар</option>
+                            <option value="1">1-қабат</option>
+                            <option value="2">2-қабат</option>
+                            <option value="3">3-қабат</option>
+                            <option value="4">4-қабат</option>
+                        </select>
+                    </div>
+
+                    <!-- Capacity Filter -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Мин. сыйымдылығы</label>
+                        <select id="filterCapacity" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition">
+                            <option value="0">Шектеусіз</option>
+                            <option value="25">25 адамнан жоғары</option>
+                            <option value="50">50 адамнан жоғары</option>
+                            <option value="100">100 адамнан жоғары</option>
+                        </select>
+                    </div>
+
+                    <!-- Status Filter -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Мәртебесі</label>
+                        <select id="filterStatus" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition">
+                            <option value="all">Барлығы</option>
+                            <option value="бос">Бос</option>
+                            <option value="броньдалған">Броньдалған</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rooms Grid -->
+            <div id="roomsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Dynamically generated room cards -->
+            </div>
+        </div>
+
+        <!-- TAB 2: CALENDAR VIEW -->
+        <div id="tabCalendar" class="hidden space-y-4">
+            <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-900">Аудиториялардың күндік кестесі</h2>
+                        <p class="text-xs text-slate-500">Таңдалған күні уақыт бойынша жүктемені тексеру</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <input type="date" id="calendarDateInput" class="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary-500">
+                    </div>
+                </div>
+
+                <!-- Timeline Schedule Grid -->
+                <div class="overflow-x-auto custom-scrollbar">
+                    <div class="min-w-[750px]">
+                        <!-- Time Header -->
+                        <div class="grid grid-cols-9 gap-2 pb-3 border-b border-slate-200 text-xs font-semibold text-slate-500 text-center">
+                            <div class="text-left font-bold text-slate-700">Аудитория</div>
+                            <div>09:00</div>
+                            <div>10:00</div>
+                            <div>11:00</div>
+                            <div>12:00</div>
+                            <div>13:00</div>
+                            <div>14:00</div>
+                            <div>15:00</div>
+                            <div>16:00</div>
+                        </div>
+
+                        <!-- Schedule Rows Container -->
+                        <div id="calendarScheduleRows" class="divide-y divide-slate-100 text-xs">
+                            <!-- JS filled rows -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: MY BOOKINGS LIST (MEHGERILGEN BRONYDAR) -->
+        <div id="tabMyBookings" class="hidden space-y-4">
+            <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-900">Меңгерілген және жасалған броньдар</h2>
+                        <p class="text-xs text-slate-500">Барлық белсенді тапсырыстар мен олардың мәртебесі</p>
+                    </div>
+                    <div class="flex items-center gap-3 w-full sm:w-auto">
+                        <button onclick="clearAllBookings()" class="text-xs font-semibold text-rose-600 hover:text-rose-700 hover:bg-rose-50 px-3.5 py-2 rounded-xl border border-rose-200 transition">
+                            <i class="fa-solid fa-trash-can mr-1"></i> Барлығын тазалау
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-50 text-slate-500 font-semibold text-xs uppercase tracking-wider">
+                            <tr>
+                                <th class="px-6 py-3.5">Бронь коды & Аудитория</th>
+                                <th class="px-6 py-3.5">Тапсырыс беруші</th>
+                                <th class="px-6 py-3.5">Рөлі / Факультет</th>
+                                <th class="px-6 py-3.5">Күн & Уақыт</th>
+                                <th class="px-6 py-3.5">Мақсаты</th>
+                                <th class="px-6 py-3.5">Мәртебесі</th>
+                                <th class="px-6 py-3.5 text-right">Әрекет</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bookingsTableBody" class="divide-y divide-slate-100 text-slate-700">
+                            <!-- JS filled content -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- BOOKING MODAL -->
+    <div id="bookingModal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center hidden p-4">
+        <div class="bg-white w-full max-w-lg rounded-2xl shadow-xl border border-slate-100 overflow-hidden transform transition-all">
+            <!-- Modal Header -->
+            <div class="px-6 py-4 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
+                <div>
+                    <h3 class="text-lg font-bold text-slate-900">Аудиторияны Броньдау</h3>
+                    <p id="modalRoomTitle" class="text-xs font-semibold text-primary-600">Аудитория №---</p>
+                </div>
+                <button onclick="closeBookingModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Form -->
+            <form id="bookingForm" onsubmit="handleBookingSubmit(event)" class="p-6 space-y-4">
+                <input type="hidden" id="modalRoomId">
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <!-- User Name -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Толық аты-жөніңіз *</label>
+                        <input type="text" id="formName" required placeholder="Мысалы: Ерлан Бекболатов" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 focus:bg-white outline-none">
+                    </div>
+
+                    <!-- Role -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Сіздің рөліңіз *</label>
+                        <select id="formRole" required class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 focus:bg-white outline-none">
+                            <option value="Оқытушы">Оқытушы</option>
+                            <option value="Студент">Студент</option>
+                            <option value="Ұйымдастырушы">Ұйымдастырушы</option>
+                            <option value="Әкімшілік">Әкімшілік</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Department / Group -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Факультет / Топ / Кафедра *</label>
+                    <input type="text" id="formDepartment" required placeholder="Мысалы: МКТ-22 немесе ЖС кафедрасы" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 focus:bg-white outline-none">
+                </div>
+
+                <!-- Date & Time Slot -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Күні *</label>
+                        <input type="date" id="formDate" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 focus:bg-white outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Басталуы *</label>
+                        <input type="time" id="formStartTime" required min="08:00" max="18:00" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 focus:bg-white outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Аяқталуы *</label>
+                        <input type="time" id="formEndTime" required min="09:00" max="19:00" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 focus:bg-white outline-none">
+                    </div>
+                </div>
+
+                <!-- Purpose -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Сабақ немесе шара атауы / Мақсаты *</label>
+                    <textarea id="formPurpose" required rows="2" placeholder="Мысалы: Деректер қоры негіздері дәрісі" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 focus:bg-white outline-none resize-none"></textarea>
+                </div>
+
+                <!-- Footer Buttons -->
+                <div class="pt-3 flex justify-end gap-3 border-t border-slate-100">
+                    <button type="button" onclick="closeBookingModal()" class="px-4 py-2 border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50 transition">
+                        Бас тарту
+                    </button>
+                    <button type="submit" class="px-5 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-sm font-semibold shadow-md shadow-primary-500/20 transition">
+                        Растау және Броньдау
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-4 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500">
+            © 2026 Аудиторияларды броньдау жүйесі. Барлық құқықтар қорғалған.
+        </div>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // Updated Mock Data with requested rooms only
+        const defaultRooms = [
+            {
+                id: 315,
+                number: "315 Лекция залы",
+                type: "Лекция залы",
+                floor: 3,
+                capacity: 100,
+                equipment: ["Проектор", "Акустика", "Маркерлік тақта", "Wi-Fi"],
+                status: "бос"
+            },
+            {
+                id: 237,
+                number: "237 Лекция залы",
+                type: "Лекция залы",
+                floor: 2,
+                capacity: 80,
+                equipment: ["Проектор", "Интерактивті тақта", "Wi-Fi"],
+                status: "бос"
+            },
+            {
+                id: 239,
+                number: "239 Лекция залы",
+                type: "Лекция залы",
+                floor: 2,
+                capacity: 90,
+                equipment: ["Проектор", "Акустика", "Wi-Fi"],
+                status: "бос"
+            },
+            {
+                id: 321,
+                number: "321 Компьютер сыныбы",
+                type: "Компьютерлік сынып",
+                floor: 3,
+                capacity: 30,
+                equipment: ["30 ПК", "Интерактивті тақта", "Кондиционер", "Wi-Fi"],
+                status: "бос"
+            },
+            {
+                id: 3191,
+                number: "319/1 Лекция залы",
+                type: "Лекция залы",
+                floor: 3,
+                capacity: 60,
+                equipment: ["Проектор", "Маркерлік тақта", "Wi-Fi"],
+                status: "бос"
+            },
+            {
+                id: 3192,
+                number: "319/2 Лекция залы",
+                type: "Лекция залы",
+                floor: 3,
+                capacity: 60,
+                equipment: ["Проектор", "Маркерлік тақта", "Wi-Fi"],
+                status: "бос"
+            }
+        ];
+
+        const todayStr = new Date().toISOString().split('T')[0];
+
+        const defaultBookings = [
+            {
+                id: 'B-1052',
+                roomId: 321,
+                roomNumber: "321 Компьютер сыныбы",
+                userName: "Бексұлтан Серіков",
+                role: "Оқытушы",
+                department: "Ақпараттық технологиялар",
+                date: todayStr,
+                startTime: "10:00",
+                endTime: "12:00",
+                purpose: "Бағдарламалау негіздері практикалық сабағы",
+                status: "Белсенді"
+            }
+        ];
+
+        // State variables backed by localStorage with updated key to reset default room list
+        let rooms = JSON.parse(localStorage.getItem('abs_rooms_v4')) || defaultRooms;
+        let bookings = JSON.parse(localStorage.getItem('abs_bookings_v4')) || defaultBookings;
+
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('abs_rooms_v4', JSON.stringify(rooms));
+            localStorage.setItem('abs_bookings_v4', JSON.stringify(bookings));
+            updateStats();
+        }
+
+        // Initialize application on load
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('formDate').value = todayStr;
+            document.getElementById('calendarDateInput').value = todayStr;
+
+            renderRooms();
+            renderCalendar();
+            renderBookingsTable();
+            updateStats();
+
+            // Setup filters
+            document.getElementById('filterSearch').addEventListener('input', renderRooms);
+            document.getElementById('filterType').addEventListener('change', renderRooms);
+            document.getElementById('filterFloor').addEventListener('change', renderRooms);
+            document.getElementById('filterCapacity').addEventListener('change', renderRooms);
+            document.getElementById('filterStatus').addEventListener('change', renderRooms);
+            document.getElementById('calendarDateInput').addEventListener('change', renderCalendar);
+        });
+
+        // Tab Switching Functionality
+        function switchTab(tabName) {
+            const tabs = [
+                { key: 'rooms', tabId: 'tabRooms', btnId: 'tabBtnRooms' },
+                { key: 'calendar', tabId: 'tabCalendar', btnId: 'tabBtnCalendar' },
+                { key: 'myBookings', tabId: 'tabMyBookings', btnId: 'tabBtnMyBookings' }
+            ];
+
+            tabs.forEach(tab => {
+                const tabEl = document.getElementById(tab.tabId);
+                const btnEl = document.getElementById(tab.btnId);
+                
+                if (tabEl && btnEl) {
+                    if (tab.key === tabName) {
+                        tabEl.classList.remove('hidden');
+                        btnEl.classList.add('border-primary-600', 'text-primary-600');
+                        btnEl.classList.remove('border-transparent', 'text-slate-500');
+                    } else {
+                        tabEl.classList.add('hidden');
+                        btnEl.classList.remove('border-primary-600', 'text-primary-600');
+                        btnEl.classList.add('border-transparent', 'text-slate-500');
+                    }
+                }
+            });
+
+            // Re-render target data
+            if (tabName === 'myBookings') {
+                renderBookingsTable();
+            } else if (tabName === 'calendar') {
+                renderCalendar();
+            }
+        }
+
+        // Update Dashboard Stats Counters
+        function updateStats() {
+            document.getElementById('statTotalRooms').innerText = rooms.length;
+            
+            const availableCount = rooms.filter(r => r.status === 'бос').length;
+            document.getElementById('statAvailableRooms').innerText = availableCount;
+            document.getElementById('statTotalBookings').innerText = bookings.length;
+            document.getElementById('bookingBadge').innerText = bookings.length;
+        }
+
+        // Render Rooms Grid
+        function renderRooms() {
+            const grid = document.getElementById('roomsGrid');
+            const searchVal = document.getElementById('filterSearch').value.toLowerCase();
+            const typeVal = document.getElementById('filterType').value;
+            const floorVal = document.getElementById('filterFloor').value;
+            const capacityVal = parseInt(document.getElementById('filterCapacity').value);
+            const statusVal = document.getElementById('filterStatus').value;
+
+            const filtered = rooms.filter(room => {
+                const matchesSearch = room.number.toLowerCase().includes(searchVal) || 
+                                      room.equipment.some(eq => eq.toLowerCase().includes(searchVal));
+                const matchesType = typeVal === 'all' || room.type === typeVal;
+                const matchesFloor = floorVal === 'all' || room.floor.toString() === floorVal;
+                const matchesCapacity = room.capacity >= capacityVal;
+                const matchesStatus = statusVal === 'all' || room.status === statusVal;
+
+                return matchesSearch && matchesType && matchesFloor && matchesCapacity && matchesStatus;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full py-12 text-center text-slate-400">
+                        <i class="fa-solid fa-folder-open text-4xl mb-3"></i>
+                        <p class="text-base font-semibold">Іздеу нәтижесі бойынша аудиториялар табылмады</p>
+                        <p class="text-xs">Фильтр параметрлерін өзгертіп көріңіз</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = filtered.map(room => {
+                const isAvailable = room.status === 'бос';
+                const statusBadge = isAvailable
+                    ? `<span class="bg-emerald-100 text-emerald-700 text-xs px-2.5 py-1 rounded-full font-semibold inline-flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-500"></span>Бос</span>`
+                    : `<span class="bg-rose-100 text-rose-700 text-xs px-2.5 py-1 rounded-full font-semibold inline-flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-rose-500"></span>Броньдалған</span>`;
+
+                return `
+                    <div class="bg-white rounded-2xl border border-slate-200/80 hover:border-primary-500/40 hover:shadow-lg transition-all duration-200 flex flex-col justify-between overflow-hidden group">
+                        <div class="p-5 space-y-4">
+                            <!-- Card Header -->
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <span class="text-[11px] font-bold tracking-wide uppercase text-primary-600 bg-primary-50 px-2.5 py-0.5 rounded-md">${room.type}</span>
+                                    <h3 class="text-lg font-bold text-slate-900 mt-1.5 group-hover:text-primary-600 transition">${room.number}</h3>
+                                </div>
+                                ${statusBadge}
+                            </div>
+
+                            <!-- Room Specs -->
+                            <div class="grid grid-cols-2 gap-2 text-xs text-slate-600 pt-1">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-layer-group text-slate-400"></i>
+                                    <span>${room.floor}-қабат</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-users text-slate-400"></i>
+                                    <span>${room.capacity} орындық</span>
+                                </div>
+                            </div>
+
+                            <!-- Equipment Tags -->
+                            <div>
+                                <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Жабдықтар:</p>
+                                <div class="flex flex-wrap gap-1.5">
+                                    ${room.equipment.map(eq => `<span class="bg-slate-100 text-slate-600 text-xs px-2 py-0.5 rounded-md">${eq}</span>`).join('')}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Button -->
+                        <div class="p-4 bg-slate-50 border-t border-slate-100">
+                            <button onclick="openBookingModal(${room.id})" ${!isAvailable ? 'disabled' : ''} 
+                                class="w-full py-2.5 px-4 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition ${
+                                    isAvailable 
+                                    ? 'bg-primary-600 hover:bg-primary-700 text-white shadow-md shadow-primary-500/20 active:scale-[0.98]' 
+                                    : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                                }">
+                                <i class="fa-solid fa-calendar-plus"></i>
+                                <span>${isAvailable ? 'Броньдау' : 'Броньдалған'}</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Render Calendar Schedule Grid
+        function renderCalendar() {
+            const container = document.getElementById('calendarScheduleRows');
+            const selectedDate = document.getElementById('calendarDateInput').value;
+
+            const timeSlots = ["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00"];
+
+            container.innerHTML = rooms.map(room => {
+                const roomBookings = bookings.filter(b => b.roomId === room.id && b.date === selectedDate);
+
+                const slotElements = timeSlots.map(time => {
+                    const isBooked = roomBookings.some(b => time >= b.startTime && time < b.endTime);
+
+                    return isBooked 
+                        ? `<div class="bg-rose-100 border border-rose-200 text-rose-700 font-semibold p-2 rounded-lg text-center text-[11px] truncate" title="Бронь бар">Бронь</div>`
+                        : `<div class="bg-emerald-50 border border-emerald-100 text-emerald-600 p-2 rounded-lg text-center text-[11px]">Бос</div>`;
+                }).join('');
+
+                return `
+                    <div class="grid grid-cols-9 gap-2 py-3 items-center">
+                        <div class="font-bold text-slate-800 truncate">${room.number}</div>
+                        ${slotElements}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Render Bookings List Table (Менің броньдарым)
+        function renderBookingsTable() {
+            const tbody = document.getElementById('bookingsTableBody');
+
+            if (!bookings || bookings.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="py-12 text-center text-slate-400">
+                            <i class="fa-solid fa-bookmark text-4xl mb-3 text-slate-300"></i>
+                            <p class="text-base font-semibold">Әзірге ешқандай бронь тіркелмеген</p>
+                            <p class="text-xs mt-1">«Аудиториялар каталогы» бөлімінен жаңа бронь қосыңыз</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = bookings.map(b => `
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="px-6 py-4">
+                        <span class="block font-bold text-primary-600 text-xs">${b.id}</span>
+                        <span class="font-semibold text-slate-900">${b.roomNumber}</span>
+                    </td>
+                    <td class="px-6 py-4 font-medium text-slate-900">${b.userName}</td>
+                    <td class="px-6 py-4 text-xs text-slate-600">
+                        <span class="block font-semibold text-slate-800">${b.role}</span>
+                        ${b.department}
+                    </td>
+                    <td class="px-6 py-4 text-xs">
+                        <span class="block font-bold text-slate-800"><i class="fa-regular fa-calendar mr-1 text-slate-400"></i>${b.date}</span>
+                        <span class="text-primary-600 font-semibold mt-0.5 block"><i class="fa-regular fa-clock mr-1 text-slate-400"></i>${b.startTime} - ${b.endTime}</span>
+                    </td>
+                    <td class="px-6 py-4 text-xs text-slate-600 max-w-xs truncate" title="${b.purpose}">${b.purpose}</td>
+                    <td class="px-6 py-4">
+                        <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs px-3 py-1 rounded-full font-semibold inline-flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>${b.status}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        <button onclick="cancelBooking('${b.id}')" class="text-rose-600 hover:text-white font-semibold text-xs px-3 py-1.5 rounded-xl hover:bg-rose-600 border border-rose-200 hover:border-rose-600 transition">
+                            Бас тарту
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Open Modal
+        function openBookingModal(roomId) {
+            const room = rooms.find(r => r.id === roomId);
+            if (!room) return;
+
+            document.getElementById('modalRoomId').value = room.id;
+            document.getElementById('modalRoomTitle').innerText = room.number + ` (${room.type}, ${room.capacity} орын)`;
+            document.getElementById('bookingModal').classList.remove('hidden');
+        }
+
+        // Close Modal
+        function closeBookingModal() {
+            document.getElementById('bookingModal').classList.add('hidden');
+            document.getElementById('bookingForm').reset();
+            document.getElementById('formDate').value = todayStr;
+        }
+
+        // Handle Booking Submission Form
+        function handleBookingSubmit(event) {
+            event.preventDefault();
+
+            const roomId = parseInt(document.getElementById('modalRoomId').value);
+            const room = rooms.find(r => r.id === roomId);
+            const name = document.getElementById('formName').value;
+            const role = document.getElementById('formRole').value;
+            const department = document.getElementById('formDepartment').value;
+            const date = document.getElementById('formDate').value;
+            const startTime = document.getElementById('formStartTime').value;
+            const endTime = document.getElementById('formEndTime').value;
+            const purpose = document.getElementById('formPurpose').value;
+
+            if (startTime >= endTime) {
+                showToast('Басталу уақыты аяқталу уақытынан ерте болуы тиіс!', 'error');
+                return;
+            }
+
+            const newBooking = {
+                id: 'B-' + Math.floor(1000 + Math.random() * 9000),
+                roomId: roomId,
+                roomNumber: room.number,
+                userName: name,
+                role: role,
+                department: department,
+                date: date,
+                startTime: startTime,
+                endTime: endTime,
+                purpose: purpose,
+                status: "Белсенді"
+            };
+
+            // Push to bookings and update room status
+            bookings.unshift(newBooking);
+            
+            // If booked for today, mark room as busy
+            if (date === todayStr) {
+                room.status = 'броньдалған';
+            }
+
+            saveData();
+            renderRooms();
+            renderCalendar();
+            renderBookingsTable();
+
+            closeBookingModal();
+            showToast('Аудитория сәтті броньдалды және тізімге қосылды!', 'success');
+        }
+
+        // Cancel specific booking
+        function cancelBooking(bookingId) {
+            const index = bookings.findIndex(b => b.id === bookingId);
+            if (index !== -1) {
+                const booking = bookings[index];
+                
+                // Release room if it was matching current active status
+                const room = rooms.find(r => r.id === booking.roomId);
+                if (room) {
+                    room.status = 'бос';
+                }
+
+                bookings.splice(index, 1);
+                saveData();
+                renderRooms();
+                renderCalendar();
+                renderBookingsTable();
+                
+                showToast('Бронь сәтті жойылды, аудитория босатылды.', 'info');
+            }
+        }
+
+        // Clear all bookings
+        function clearAllBookings() {
+            if (confirm('Барлық броньдарды өшіруді қалайтыныңызға сенімдісіз бе?')) {
+                bookings = [];
+                rooms.forEach(r => r.status = 'бос');
+                saveData();
+                renderRooms();
+                renderCalendar();
+                renderBookingsTable();
+                showToast('Барлық броньдар тазаланды.', 'info');
+            }
+        }
+
+        // Toast Notification System
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            
+            const bgColors = {
+                success: 'bg-emerald-600 text-white shadow-emerald-500/20',
+                error: 'bg-rose-600 text-white shadow-rose-500/20',
+                info: 'bg-slate-800 text-white shadow-slate-900/20'
+            };
+
+            const icons = {
+                success: 'fa-circle-check',
+                error: 'fa-circle-exclamation',
+                info: 'fa-info-circle'
+            };
+
+            toast.className = `${bgColors[type]} text-xs font-semibold px-4 py-3 rounded-xl shadow-lg flex items-center gap-2.5 transform transition-all duration-300 translate-y-2 opacity-0`;
+            toast.innerHTML = `<i class="fa-solid ${icons[type]} text-base"></i> <span>${message}</span>`;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+    </script>
 </body>
 </html>
