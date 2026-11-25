@@ -55,6 +55,7 @@
             background: #94a3b8;
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
 
@@ -70,6 +71,7 @@
                     <div>
                         <h1 class="text-xl font-bold text-slate-900 tracking-tight leading-none">Аудитория Броньдау</h1>
                         <p class="text-xs text-slate-500 font-medium mt-0.5">Университеттік автоматтандырылған жүйе</p>
+                        <p id="syncStatus" class="text-[10px] font-semibold text-slate-500">Supabase серверіне қосылуда…</p>
                     </div>
                 </div>
 
@@ -447,46 +449,169 @@
             }
         ];
 
-        const todayStr = new Date().toISOString().split('T')[0];
-
-        const defaultBookings = [
-            {
-                id: 'B-1052',
-                roomId: 321,
-                roomNumber: "321 Компьютер сыныбы",
-                userName: "Бексұлтан Серіков",
-                role: "Оқытушы",
-                department: "Ақпараттық технологиялар",
-                date: todayStr,
-                startTime: "10:00",
-                endTime: "12:00",
-                purpose: "Бағдарламалау негіздері практикалық сабағы",
-                status: "Белсенді"
+        // Supabase connection (public browser key only; never put a service_role key here)
+        const SUPABASE_URL = "https://zdapxralxowchbmaslgg.supabase.co";
+        const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_sJHKMSZAG4yXKBWyfxGk2g_WJlx9onh";
+        let supabaseClient = null;
+        let supabaseInitError = null;
+        try {
+            if (!window.supabase || typeof window.supabase.createClient !== 'function') {
+                throw new Error('Supabase JS кітапханасы жүктелмеді');
             }
-        ];
-
-        // State variables backed by localStorage with updated key to reset default room list
-        let rooms = JSON.parse(localStorage.getItem('abs_rooms_v4')) || defaultRooms;
-        let bookings = JSON.parse(localStorage.getItem('abs_bookings_v4')) || defaultBookings;
-
-        // Save data to localStorage
-        function saveData() {
-            localStorage.setItem('abs_rooms_v4', JSON.stringify(rooms));
-            localStorage.setItem('abs_bookings_v4', JSON.stringify(bookings));
-            updateStats();
+            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+        } catch (error) {
+            supabaseInitError = error;
+            console.error('Supabase initialization error:', error);
         }
 
-        // Initialize application on load
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('formDate').value = todayStr;
-            document.getElementById('calendarDateInput').value = todayStr;
+        // Use the browser's local calendar date (not UTC) for Kazakhstan and other time zones.
+        const localDateString = (date = new Date()) => {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
+        const todayStr = localDateString();
 
+        let rooms = defaultRooms;
+        let bookings = [];
+        let bookingsChannel = null;
+        let isLoadingBookings = false;
+
+        function mapBookingFromDb(row) {
+            return {
+                id: row.id,
+                roomId: Number(row.room_id),
+                roomNumber: row.room_number,
+                userName: row.user_name,
+                role: row.role,
+                department: row.department,
+                date: row.date,
+                startTime: String(row.start_time).slice(0, 5),
+                endTime: String(row.end_time).slice(0, 5),
+                purpose: row.purpose,
+                status: row.status
+            };
+        }
+
+        function mapBookingToDb(booking) {
+            return {
+                id: booking.id,
+                room_id: booking.roomId,
+                room_number: booking.roomNumber,
+                user_name: booking.userName,
+                role: booking.role,
+                department: booking.department,
+                date: booking.date,
+                start_time: booking.startTime,
+                end_time: booking.endTime,
+                purpose: booking.purpose,
+                status: booking.status
+            };
+        }
+
+        function syncRoomStatuses() {
+            rooms.forEach(room => {
+                const hasBookingToday = bookings.some(b =>
+                    b.roomId === room.id && b.date === todayStr && b.status === 'Белсенді'
+                );
+                room.status = hasBookingToday ? 'броньдалған' : 'бос';
+            });
+        }
+
+        function renderAll() {
+            syncRoomStatuses();
             renderRooms();
             renderCalendar();
             renderBookingsTable();
             updateStats();
+        }
 
-            // Setup filters
+        async function loadBookings(showError = true) {
+            if (isLoadingBookings) return;
+            isLoadingBookings = true;
+            if (!supabaseClient) {
+                isLoadingBookings = false;
+                if (showError) showToast('Supabase кітапханасына қосылмады. Интернетті тексеріп, бетті жаңартыңыз.', 'error');
+                return;
+            }
+
+            let result;
+            try {
+                result = await supabaseClient
+                    .from('bookings')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+            } catch (networkError) {
+                isLoadingBookings = false;
+                console.error('Supabase network error:', networkError);
+                if (showError) showToast('Supabase серверіне қосылу мүмкін болмады.', 'error');
+                return;
+            }
+            isLoadingBookings = false;
+            const { data, error } = result;
+
+            if (error) {
+                console.error('Supabase load error:', error);
+                if (showError) showToast('Дерекқордан броньдарды жүктеу мүмкін болмады. SQL баптауларын тексеріңіз.', 'error');
+                return;
+            }
+
+            bookings = (data || []).map(mapBookingFromDb);
+            renderAll();
+        }
+
+        function subscribeToBookingChanges() {
+            if (!supabaseClient) return;
+            if (bookingsChannel) supabaseClient.removeChannel(bookingsChannel);
+            bookingsChannel = supabaseClient
+                .channel('public-bookings-live')
+                .on('postgres_changes', {
+                    event: '*',
+                    schema: 'public',
+                    table: 'bookings'
+                }, async () => {
+                    await loadBookings(false);
+                })
+                .subscribe((status) => {
+                    const indicator = document.getElementById('syncStatus');
+                    if (!indicator) return;
+                    if (status === 'SUBSCRIBED') {
+                        indicator.textContent = 'Онлайн синхрондау қосулы';
+                        indicator.className = 'text-[10px] font-semibold text-emerald-600';
+                    } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+                        indicator.textContent = 'Синхрондау қатесі';
+                        indicator.className = 'text-[10px] font-semibold text-rose-600';
+                    } else {
+                        indicator.textContent = 'Серверге қосылуда…';
+                        indicator.className = 'text-[10px] font-semibold text-slate-500';
+                    }
+                });
+        }
+
+        // Initialize application and load the shared database before rendering live data.
+        document.addEventListener('DOMContentLoaded', async () => {
+            document.getElementById('formDate').value = todayStr;
+            document.getElementById('calendarDateInput').value = todayStr;
+
+            // This destructive action is intentionally hidden on the public version.
+            const clearAllButton = document.querySelector('[onclick="clearAllBookings()"]');
+            if (clearAllButton) clearAllButton.classList.add('hidden');
+
+            // Render the original room catalogue immediately, even if the database is offline.
+            renderAll();
+            if (supabaseClient) {
+                await loadBookings();
+                subscribeToBookingChanges();
+            } else {
+                const indicator = document.getElementById('syncStatus');
+                if (indicator) {
+                    indicator.textContent = 'Supabase жүктелмеді';
+                    indicator.className = 'text-[10px] font-semibold text-rose-600';
+                }
+                showToast('Аудиториялар көрсетілді, бірақ Supabase қосылымы жоқ. Интернетті тексеріңіз.', 'error');
+            }
+
             document.getElementById('filterSearch').addEventListener('input', renderRooms);
             document.getElementById('filterType').addEventListener('change', renderRooms);
             document.getElementById('filterFloor').addEventListener('change', renderRooms);
@@ -570,7 +695,7 @@
             }
 
             grid.innerHTML = filtered.map(room => {
-                const isAvailable = room.status === 'бос';
+                const isAvailable = true; // Booking availability is checked for the selected time in Supabase.
                 const statusBadge = isAvailable
                     ? `<span class="bg-emerald-100 text-emerald-700 text-xs px-2.5 py-1 rounded-full font-semibold inline-flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-500"></span>Бос</span>`
                     : `<span class="bg-rose-100 text-rose-700 text-xs px-2.5 py-1 rounded-full font-semibold inline-flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-rose-500"></span>Броньдалған</span>`;
@@ -617,7 +742,7 @@
                                     : 'bg-slate-200 text-slate-400 cursor-not-allowed'
                                 }">
                                 <i class="fa-solid fa-calendar-plus"></i>
-                                <span>${isAvailable ? 'Броньдау' : 'Броньдалған'}</span>
+                                <span>Броньдау</span>
                             </button>
                         </div>
                     </div>
@@ -716,89 +841,103 @@
             document.getElementById('formDate').value = todayStr;
         }
 
-        // Handle Booking Submission Form
-        function handleBookingSubmit(event) {
+        // Handle Booking Submission Form (writes to the shared Supabase database)
+        async function handleBookingSubmit(event) {
             event.preventDefault();
 
-            const roomId = parseInt(document.getElementById('modalRoomId').value);
+            const roomId = parseInt(document.getElementById('modalRoomId').value, 10);
             const room = rooms.find(r => r.id === roomId);
-            const name = document.getElementById('formName').value;
+            if (!room) {
+                showToast('Аудитория табылмады. Бетті жаңартыңыз.', 'error');
+                return;
+            }
+
+            const name = document.getElementById('formName').value.trim();
             const role = document.getElementById('formRole').value;
             const department = document.getElementById('formDepartment').value;
             const date = document.getElementById('formDate').value;
             const startTime = document.getElementById('formStartTime').value;
             const endTime = document.getElementById('formEndTime').value;
-            const purpose = document.getElementById('formPurpose').value;
+            const purpose = document.getElementById('formPurpose').value.trim();
 
-            if (startTime >= endTime) {
+            if (!date || !startTime || !endTime || startTime >= endTime) {
                 showToast('Басталу уақыты аяқталу уақытынан ерте болуы тиіс!', 'error');
                 return;
             }
 
             const newBooking = {
-                id: 'B-' + Math.floor(1000 + Math.random() * 9000),
-                roomId: roomId,
+                id: crypto.randomUUID(),
+                roomId,
                 roomNumber: room.number,
                 userName: name,
-                role: role,
-                department: department,
-                date: date,
-                startTime: startTime,
-                endTime: endTime,
-                purpose: purpose,
-                status: "Белсенді"
+                role,
+                department,
+                date,
+                startTime,
+                endTime,
+                purpose,
+                status: 'Белсенді'
             };
 
-            // Push to bookings and update room status
-            bookings.unshift(newBooking);
-            
-            // If booked for today, mark room as busy
-            if (date === todayStr) {
-                room.status = 'броньдалған';
+            const submitButton = document.querySelector('#bookingForm button[type="submit"]');
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.textContent = 'Сақталуда…';
             }
 
-            saveData();
-            renderRooms();
-            renderCalendar();
-            renderBookingsTable();
+            if (!supabaseClient) {
+                if (submitButton) { submitButton.disabled = false; submitButton.textContent = 'Растау және Броньдау'; }
+                showToast('Supabase қосылымы жоқ. Бронь сақталмады.', 'error');
+                return;
+            }
+            const { error } = await supabaseClient.from('bookings').insert(mapBookingToDb(newBooking));
 
-            closeBookingModal();
-            showToast('Аудитория сәтті броньдалды және тізімге қосылды!', 'success');
-        }
+            if (submitButton) {
+                submitButton.disabled = false;
+                submitButton.textContent = 'Растау және Броньдау';
+            }
 
-        // Cancel specific booking
-        function cancelBooking(bookingId) {
-            const index = bookings.findIndex(b => b.id === bookingId);
-            if (index !== -1) {
-                const booking = bookings[index];
-                
-                // Release room if it was matching current active status
-                const room = rooms.find(r => r.id === booking.roomId);
-                if (room) {
-                    room.status = 'бос';
+            if (error) {
+                console.error('Supabase insert error:', error);
+                if (error.code === '23P01') {
+                    showToast('Бұл аудитория осы уақытта броньдалған. Басқа уақытты таңдаңыз.', 'error');
+                } else {
+                    showToast('Бронь сақталмады. Supabase кестесі мен RLS саясаттарын тексеріңіз.', 'error');
                 }
-
-                bookings.splice(index, 1);
-                saveData();
-                renderRooms();
-                renderCalendar();
-                renderBookingsTable();
-                
-                showToast('Бронь сәтті жойылды, аудитория босатылды.', 'info');
+                return;
             }
+
+            await loadBookings(false);
+            closeBookingModal();
+            showToast('Аудитория сәтті броньдалды! Өзгеріс басқа қолданушыларға жіберілді.', 'success');
         }
 
-        // Clear all bookings
-        function clearAllBookings() {
-            if (confirm('Барлық броньдарды өшіруді қалайтыныңызға сенімдісіз бе?')) {
-                bookings = [];
-                rooms.forEach(r => r.status = 'бос');
-                saveData();
-                renderRooms();
-                renderCalendar();
-                renderBookingsTable();
-                showToast('Барлық броньдар тазаланды.', 'info');
+        // Cancel a booking in the shared database.
+        async function cancelBooking(bookingId) {
+            if (!confirm('Осы броньды жоюға сенімдісіз бе?')) return;
+
+            if (!supabaseClient) {
+                showToast('Supabase қосылымы жоқ. Бронь жойылмады.', 'error');
+                return;
             }
+            const { error } = await supabaseClient
+                .from('bookings')
+                .delete()
+                .eq('id', bookingId);
+
+            if (error) {
+                console.error('Supabase delete error:', error);
+                showToast('Броньды жою мүмкін болмады. Қолжетімділік саясаттарын тексеріңіз.', 'error');
+                return;
+            }
+
+            await loadBookings(false);
+            showToast('Бронь жойылды. Өзгеріс басқа қолданушыларға синхрондалды.', 'info');
+        }
+
+        // Bulk deletion is disabled for public users to protect shared reservations.
+        function clearAllBookings() {
+            showToast('Барлық броньдарды тазалау тек әкімшіге қолжетімді болуы керек.', 'error');
         }
 
         // Toast Notification System
